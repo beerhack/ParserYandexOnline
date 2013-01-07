@@ -30,15 +30,27 @@ for($i=1; $i<=$howmany; $i++){
 	$url ='http://livequeries-front.corba.yandex.net/queries/?ll1=-1.7356459922329044,-1.9623822499999828&ll2=84.54750547846963,209.32668025&limit=1000';
 	$str = curlFunc($url);
 	if(preg_match_all('/query text="([^"]+)"/i',$str,$match)>0){
-		if($unic){
-			$keyarray = array_unique($match[1]);
-			$howmanyfact += sizeof($keyarray);
-		} else {
-			$keyarray = $match[1];
-		}
-		foreach($keyarray as $key){
+		foreach($match[1] as $key){
 			$key = str_replace('&quot;', '"', $key);
-			$key = trim($key);
+			$keyArray[] = trim($key);
+		}
+		if($unic){
+			$keyArray = array_unique($keyArray);
+			if(file_exists($filename)){
+				$keysInFile = file($filename);
+				foreach($keysInFile as $key){
+					$keysInFileArray[] = trim($key);
+				}
+				$unicKeys = array_diff($keyArray, $keysInFileArray);
+			} else {
+				$unicKeys = $keyArray;
+			}
+			$howmanyfact += sizeof($unicKeys);
+			$keys = $unicKeys;
+		} else {
+			$keys = $keyArray;
+		}
+		foreach($keys as $key){
 			$f = fopen($filename,'at');
 			fwrite($f,$key."\n");
 			fclose($f);
